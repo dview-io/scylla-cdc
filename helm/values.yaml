@@ -1,0 +1,76 @@
+#Image Details
+image: dview/scylla-kafka-connector:v1.0.0
+imagePullPolicy: IfNotPresent # IfNotPresent,Always
+
+org: dview   #Organisation Name
+tenant: checkpoint   #Team name
+
+#Set the ScyllaDBConfigDetails
+scyllaDBConfig:
+  host: localhost
+  port: '9042'
+  userName: admin
+  scPassword: xxxxxxxx
+
+#Set the ScyllaDB local DC name
+dcName: datacenter1
+
+# List of tables to onboard in a specific schema mapping
+tables: {"testing":[{"tableName":"timeline","primaryKey":"userid"}]}
+
+# Column to be pulled from N depth to 0 level column
+tableFtKeys: {} # 1 level of depth Supported
+
+# No of Worker to replicate, Keep recommended and 1 -> 3
+workersCount: 1
+
+# Kafka Brokers Endpoint
+kafkaBrokers: localhost:9092
+
+# No of parallel Kafka instances to push messages
+poolSize: 3 #3 should be given
+
+# Slack URL to push Alerts
+slackWebhookURL: xxxxx
+
+# To persist checkpointing in MYSQL
+dataSourceConfig:
+  driverClass: com.mysql.cj.jdbc.Driver
+  username: root # Mysql User
+  password: root # Mysql Pwd
+  jdbcUrl: jdbc:mysql://127.0.0.1:3306/scylla_cdc?autoReconnect=true        # jdbc:mysql://{HOST}:{PORT}/scylla_cdc?autoReconnect=true
+  acquireIncrement: 5
+  initialPoolSize: 10
+  minConnectionsPerPartition: 10
+  maxConnectionsPerPartition: 50
+  idleMaxAgeInSeconds: 300
+  statementsCacheSize: 500
+  idleConnectionTestPeriodInSeconds: 30
+
+# Resources to Application & Job!!! Keep applicationMemoryProcessSize & jobMemoryProcessSize in mind
+resources:
+  limits:
+    cpu: .1
+    memory: 6144Mi #IN MB
+  requests:
+    cpu: .1
+    memory: 6144Mi #IN MB
+
+# Execution Job memory should be less or equal to resources limit.
+min: "-Xms4098m"
+max: "-Xmx4098m"
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: scylla-cdc
+  # Annotations to add to the service account
+  annotations: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

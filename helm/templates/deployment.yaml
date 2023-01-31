@@ -1,0 +1,127 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scylla-cdc-{{ .Release.Name }}
+  namespace: data
+  labels:
+    k8s-app: scylla-cdc-{{ .Release.Name }}
+spec:
+  progressDeadlineSeconds: 420
+  revisionHistoryLimit: 2
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: scylla-cdc-{{ .Release.Name }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        k8s-app: scylla-cdc-{{ .Release.Name }}
+    spec:
+      containers:
+        - name: scylla-cdc-{{ .Release.Name }}
+          image: {{ .Values.image }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          readinessProbe:
+            exec:
+              command:
+                - touch
+                - /scylla-kafka/healthy
+            failureThreshold: 3
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          livenessProbe:
+            exec:
+              command:
+                - touch
+                - /scylla-kafka/healthy
+            failureThreshold: 3
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          env:
+            - name: XMS
+              value: {{ .Values.min }}
+            - name: XMX
+              value: {{ .Values.max }}
+            - name: ORG
+              value: {{ .Values.org }}
+            - name: TENANT
+              value: {{ .Values.tenant }}
+            - name: WORKER_COUNT
+              value: {{ .Values.workersCount }}
+            - name: KEYSPACE_AND_TABLES
+              value: {{ .Values.tables }}
+            - name: TABLES_TF
+              value: {{ .Values.tableFtKeys }}
+            - name: SCYLLA_PROD_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: scylla-cdc-{{ .Release.Name }}
+                  key: SCYLLA_PROD_HOST
+            - name: SCYLLA_PROD_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: scylla-cdc-{{ .Release.Name }}
+                  key: SCYLLA_PROD_PORT
+            - name: SCYLLA_PROD_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: scylla-cdc-{{ .Release.Name }}
+                  key: SCYLLA_PROD_USERNAME
+            - name: SCYLLA_PROD_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: scylla-cdc-{{ .Release.Name }}
+                  key: SCYLLA_PROD_PASSWORD
+            - name: KAFKA_ENDPOINT_WITH_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: scylla-cdc-{{ .Release.Name }}
+                  key: KAFKA_ENDPOINT_WITH_PORT
+            - name: MYSQL_HOST_SYCLLA_CONNECTOR
+              valueFrom:
+                secretKeyRef:
+                  name: scylla-cdc-{{ .Release.Name }}
+                  key: MYSQL_HOST_SYCLLA_CONNECTOR
+            - name: MYSQL_USR
+              valueFrom:
+                secretKeyRef:
+                  name: scylla-cdc-{{ .Release.Name }}
+                  key: MYSQL_USR
+            - name: MYSQL_PWD
+              valueFrom:
+                secretKeyRef:
+                  name: scylla-cdc-{{ .Release.Name }}
+                  key: MYSQL_PWD
+            - name: SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: scylla-cdc-{{ .Release.Name }}
+                  key: SLACK_WEBHOOK_URL
+            - name: DATA_CENTER
+              valueFrom:
+                secretKeyRef:
+                  name: scylla-cdc-{{ .Release.Name }}
+                  key: DATA_CENTER
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ .Values.serviceAccount.name }}-{{ .Release.Name }} # Service account which has the permissions to create, edit, delete ConfigMaps
+      terminationGracePeriodSeconds: 30
