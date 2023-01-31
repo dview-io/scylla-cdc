@@ -1,5 +1,5 @@
 # scylla-cdc
-Release v1.0.0.0
+Release v1.0.0
 
 scylla-cdc is a library that makes it easy to consume the [Scylla CDC log](https://docs.scylladb.com/using-scylla/cdc/) and push it to [KAFKA](https://kafka.apache.org/). The library automatically and transparently handles errors and topology changes of the underlying Scylla cluster.
 
