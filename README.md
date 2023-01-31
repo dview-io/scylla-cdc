@@ -11,6 +11,11 @@ It is recommended to get familiar with the Scylla CDC documentation first, in or
 ## Why Use a Library?
 Scylla's design of CDC is based on the concept of CDC log tables. For every table whose changes you wish to track, an associated CDC log table is created. We refer to this new table as the CDC log table and the original table as a base table. Every time you modify your data in the base table — insert, update or delete — this fact is recorded by inserting one or more rows to the corresponding CDC log table. This library also supports replication of **UDT & Collections (Map, List & Set)** columns. 
 
+## Key Features:
+    1. Checkpointing
+    2. Table level observability
+    3. UDT & Collection Type support    
+
 ## Installation
 
 You can integrate it in your application by using helm installation. Make changes in values.yaml as per instructions:
